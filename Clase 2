@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Destilación al Vacío - Clase 2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Interfaz de las Mazmorras Herméticas */
+        body {
+            background-color: #050a0c;
+            color: #d1e1f2;
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            transition: filter 1s ease; /* Transición suave para el efecto gas */
+        }
+
+        /* Cuando se libera el gas amnésico, todo el cuerpo recibe el desenfoque masivo */
+        body.gas-active {
+            filter: blur(12px);
+        }
+
+        .interface-container {
+            background-color: #0b1318;
+            border: 2px solid #233d4d;
+            box-shadow: 0 0 20px rgba(35, 61, 77, 0.5);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 700px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 22pt;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #233d4d;
+            padding-bottom: 10px;
+        }
+
+        .sub-header {
+            font-style: italic;
+            color: #8da5b3;
+            font-size: 11pt;
+            margin-bottom: 15px;
+        }
+
+        .stats-bar {
+            background-color: #04090c;
+            border: 1px solid #172a35;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 10.5pt;
+            margin-bottom: 20px;
+            color: #5dade2;
+            font-weight: bold;
+        }
+
+        /* Contenedor del Sistema de Destilación al Vacío */
+        .destilador-display {
+            width: 140px;
+            height: 180px;
+            background: linear-gradient(135deg, #1c2d37, #070d12);
+            border: 4px solid #7f8c8d; /* Plata Hermética */
+            border-radius: 30px 30px 15px 15px;
+            margin: 20px auto;
+            position: relative;
+            box-shadow: inset 0 0 25px #000, 0 0 15px rgba(127, 140, 141, 0.3);
+            transition: all 0.5s ease;
+        }
+
+        /* Indicador de Vacío Alquímico (Manómetro) */
+        .vacuum-seal {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 35px;
+            background-color: #2c3e50;
+            border: 3px solid #7f8c8d;
+            border-radius: 50%;
+            font-family: monospace;
+            font-size: 7.5pt;
+            line-height: 29px;
+            color: #e74c3c; /* Rojo: Sin Vacío */
+            font-weight: bold;
+        }
+        .vacuum-seal.sealed {
+            color: #2ecc71; /* Verde: Vacío Hermético */
+            box-shadow: 0 0 8px #2ecc71;
+        }
+
+        /* Fluido Interno de Lágrimas */
+        .liquid {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 15px;
+            top: 140px; /* Vacío inicial */
+            background-color: transparent;
+            border-radius: 10px 10px 8px 8px;
+            transition: all 0.8s ease;
+        }
+
+        /* Mutaciones de los Estados del Fluido */
+        .liquid.lagrimas { top: 70px; background-color: #a9cce3; box-shadow: inset 0 0 15px #5499c7, 0 0 10px rgba(169, 204, 227, 0.5); }
+        .liquid.tamiz { top: 65px; background-color: #ccd1d1; box-shadow: inset 0 0 15px #7f8c8d; filter: hue-rotate(30deg); }
+        .liquid.plateado { top: 60px; background-color: #eaeded; box-shadow: inset 0 0 25px #ffffff, 0 0 20px rgba(255, 255, 255, 0.8); }
+        .liquid.vaporizado { top: 20px; background-color: #7b7d7d !important; box-shadow: 0 0 35px #95a5a6 !important; }
+
+        /* Quemador Base */
+        .fire-burner {
+            width: 70px;
+            height: 12px;
+            background-color: #444;
+            margin: 0 auto;
+            border-radius: 3px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .fire-burner.on { background-color: #d35400; box-shadow: 0 4px 12px #d35400; }
+
+        /* Consola del Ministerio */
+        .console-box {
+            background-color: #030608;
+            border: 1px solid #172a35;
+            font-family: monospace;
+            padding: 15px;
+            text-align: left;
+            border-radius: 4px;
+            height: 110px;
+            overflow-y: auto;
+            margin-bottom: 25px;
+            color: #5dade2;
+            font-size: 10pt;
+        }
+
+        /* Botonera Operativa */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            background-color: #0b1a24;
+            border: 1px solid #172a35;
+            color: #d5f5e3;
+            padding: 12px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background-color: #172a35;
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(93, 173, 226, 0.4);
+        }
+
+        button:disabled {
+            background-color: #050b0f;
+            border-color: #0d171e;
+            color: #34495e;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-action {
+            background-color: #641e16;
+            border-color: #7b241c;
+            color: #ffffff;
+        }
+        .btn-action:hover { background-color: #7b241c; }
+
+        .btn-pdf {
+            background-color: #7d6608;
+            border-color: #9a7d0a;
+            color: #ffffff;
+        }
+        .btn-pdf:hover { background-color: #9a7d0a; }
+
+        /* Interfaz en caso de emanación de Gas */
+        .interface-container.gas-leak {
+            border-color: #7b241c;
+            box-shadow: 0 0 25px #c0392b;
+        }
+
+        /* =========================================================
+           ESTILOS DEL PERGAMINO DE EVALUACIÓN PDF (OCULTO EN WEB)
+           ========================================================= */
+        #pdf-template {
+            display: none;
+            background-color: #0b1319;
+            color: #e5e8e8;
+            font-family: 'Times New Roman', Times, serif;
+            padding: 35px;
+            border: 5px double #34495e;
+            width: 620px;
+            margin: 0 auto;
+        }
+
+        .pdf-header {
+            text-align: center;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .pdf-title {
+            font-size: 19pt;
+            font-weight: bold;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .pdf-subtitle {
+            font-size: 11pt;
+            font-style: italic;
+            color: #a6acaf;
+            margin: 5px 0 0 0;
+        }
+
+        .pdf-section {
+            margin-bottom: 20px;
+            font-size: 12pt;
+        }
+
+        .pdf-field {
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #2c3e50;
+            padding-bottom: 6px;
+        }
+
+        .pdf-label {
+            font-weight: bold;
+            color: #5dade2;
+            text-transform: uppercase;
+            font-size: 10pt;
+            display: inline-block;
+            width: 220px;
+        }
+
+        .pdf-value {
+            color: #ffffff;
+        }
+
+        .pdf-dictamen {
+            background-color: #0b2535;
+            border-left: 4px solid #5dade2;
+            padding: 15px;
+            margin-top: 30px;
+            font-style: italic;
+            text-align: justify;
+            line-height: 1.5;
+        }
+
+        .pdf-dictamen.fail {
+            background-color: #2a0f0f;
+            border-left-color: #e74c3c;
+        }
+
+        .pdf-footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 9.5pt;
+            color: #7f8c8d;
+            border-top: 1px solid #34495e;
+            padding-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="interface-container" id="lab-interface">
+        <h1>Mesa de Destilación al Vacío</h1>
+        <div class="sub-header">Cátedra del Profesor Jeremías Snape • Certificación Oficial de Alquimia</div>
+
+        <div class="stats-bar" id="stats-display">
+            🔮 HISTORIAL DEL OPERARIO: Intento Actual N° 1
+        </div>
+
+        <div class="destilador-display" id="destilador">
+            <div class="vacuum-seal" id="manometro">OFF</div>
+            <div class="liquid" id="pocion-liquido"></div>
+        </div>
+        <div class="fire-burner" id="quemador"></div>
+
+        <div class="console-box" id="consola">
+            [SISTEMA]: Contenedor purgado y estéril. Esperando introducción de la matriz base...
+        </div>
+
+        <div class="controls-grid">
+            <button id="btn-lagrimas" onclick="inyectarLagrimas()">Inyectar 3 Lágrimas de Fénix</button>
+            <button id="btn-vacio" onclick="activarBombaVacio()">Activar Bomba de Vacío</button>
+            <button id="btn-fuego" onclick="alternarFuego()">Encender Calor Sutil</button>
+            <button id="btn-tamiz" onclick="filtrarBezoar()">Filtrar por Tamiz de Bezoar</button>
+            <button id="btn-ruda" class="btn-action" onclick="inyectarRuda()">Inyectar Ruda Criogénica</button>
+            
+            <button id="btn-descargar" class="btn-pdf" onclick="descargarPDFClase2()" disabled>Descargar Certificado (PDF)</button>
+            
+            <button id="btn-reiniciar" onclick="reiniciarMesa()" style="grid-column: span 2; background-color: #161a1d; border-color: #2c3e50;">Limpiar Mesa (Siguiente Intento)</button>
+        </div>
+    </div>
+
+    <div id="pdf-template">
+        <div class="pdf-header">
+            <div class="pdf-title">Pergamino Oficial de Certificación</div>
+            <div class="pdf-subtitle">Hogwarts Orión • Registro de Logros de la Dirección de Mazmorras</div>
+        </div>
+
+        <div class="pdf-section">
+            <div class="pdf-field">
+                <span class="pdf-label">Asignatura del Castillo:</span>
+                <span class="pdf-value">Pociones Avanzadas (Mesa Clínica N°2)</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Cátedra Regente:</span>
+                <span class="pdf-value">Director Jeremías Snape</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Sustancia Ensayada:</span>
+                <span class="pdf-value">Esencia de Latencia Álmica (Destilado Amnésico)</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Intentos Realizados:</span>
+                <span class="pdf-value" id="pdf-intentos">1</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Estado de la Estructura:</span>
+                <span class="pdf-value" id="pdf-estado">-</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Código de Validación:</span>
+                <span class="pdf-value" id="pdf-codigo" style="font-family: monospace; font-weight: bold;">-</span>
+            </div>
+        </div>
+
+        <div class="pdf-dictamen" id="pdf-dictamen-box">
+            <span id="pdf-texto-dictamen">-</span>
+        </div>
+
+        <div class="pdf-footer">
+            ~~••~~••~~• Documento Validado Bajo Sello Mágico Inquebrantable •๑۩⚗️۩๑•~~••~~••~~
+        </div>
+    </div>
+
+    <script>
+        // Variables de Control Alquímico
+        let tieneLagrimas = false;
+        let vacioActivo = false;
+        let fuegoEncendido = false;
+        let filtradoHecho = false;
+        let operacionTerminada = false;
+
+        let numeroIntentos = 1;
+        let estadoFinal = "En proceso de destilación";
+        let codigoValidacion = "[NINGUNO]";
+
+        const consola = document.getElementById("consola");
+        const liquido = document.getElementById("pocion-liquido");
+        const quemador = document.getElementById("quemador");
+        const manometro = document.getElementById("manometro");
+        const interfaz = document.getElementById("lab-interface");
+        const btnFuego = document.getElementById("btn-fuego");
+        const btnDescargar = document.getElementById("btn-descargar");
+        const statsDisplay = document.getElementById("stats-display");
+
+        function actualizarConsola(texto) {
+            consola.innerHTML += "<br>" + texto;
+            consola.scrollTop = consola.scrollHeight;
+        }
+
+        function inyectarLagrimas() {
+            if (operacionTerminada || tieneLagrimas) return;
+            tieneLagrimas = true;
+            document.getElementById("btn-lagrimas").disabled = true;
+            liquido.className = "liquid lagrimas";
+            actualizarConsola("[MATRIZ]: 3 lágrimas de fénix puras inyectadas. Fluido translúcido detectado.");
+        }
+
+        function activarBombaVacio() {
+            if (operacionTerminada || vacioActivo) return;
+            vacioActivo = true;
+            document.getElementById("btn-vacio").disabled = true;
+            manometro.innerText = "ON";
+            manometro.classList.add("sealed");
+            actualizarConsola("[VACÍO]: Bomba extractora activa. Oxígeno purgado por completo. Índice Psi (ψ) asegurado.");
+        }
+
+        function alternarFuego() {
+            if (operacionTerminada) return;
+            fuegoEncendido = !fuegoEncendido;
+            if (fuegoEncendido) {
+                quemador.classList.add("on");
+                btnFuego.innerText = "Apagar Calor Sutil";
+                actualizarConsola("[TÉRMICO]: Calor sutil activo. Iniciando evaporación controlada de la matriz.");
+            } else {
+                quemador.classList.remove("on");
+                btnFuego.innerText = "Encender Calor Sutil";
+                actualizarConsola("[TÉRMICO]: Fuente calórica disipada. Temperatura de cámara estabilizándose.");
+            }
+        }
+
+        function filtrarBezoar() {
+            if (operacionTerminada) return;
+            if (!tieneLagrimas) {
+                actualizarConsola("[FALLO]: No hay matriz conductora líquida para filtrar.");
+                return;
+            }
+            if (!vacioActivo) {
+                actualizarConsola("[ADVERTENCIA]: El aire ambiente contaminará las lágrimas si las filtras sin vacío. Pureza en riesgo.");
+                return;
+            }
+            if (!fuegoEncendido) {
+                actualizarConsola("[FALLO]: Falta energía cinética térmica para forzar el paso por el tamiz.");
+                return;
+            }
+            filtradoHecho = true;
+            document.getElementById("btn-tamiz").disabled = true;
+            liquido.className = "liquid tamiz";
+            actualizarConsola("[TAMIZ]: Fluido filtrado gota a gota por el carbón activo de Bezoar. Distorsión óptica activada.");
+        }
+
+        function inyectarRuda() {
+            if (operacionTerminada) return;
+            if (!filtradoHecho) {
+                actualizarConsola("[SNAPE]: Inyectar fijadores criogénicos sin activar la matriz amnésica es un acto torpe.");
+                return;
+            }
+
+            operacionTerminada = true;
+            btnDescargar.disabled = false;
+            document.getElementById("btn-ruda").disabled = true;
+            document.getElementById("btn-fuego").disabled = true;
+
+            // EVALUACIÓN DEL PUNTO CRÍTICO: Ruda sobre Fuego prendido
+            if (fuegoEncendido) {
+                // RUTA DEL DESASTRE CATASTRÓFICO
+                estadoFinal = "SISTEMA VAPORIZADO (Emanación Masiva de Gas Amnésico)";
+                codigoValidacion = "[SNA-AMNESIA-ERRADA]";
+                
+                liquido.className = "liquid vaporizado";
+                interfaz.classList.add("gas-leak");
+                consola.style.color = "#ec7063";
+                actualizarConsola("<br>[🚨 CATASTROFE]: ¡CHOQUE TÉRMICO VIOLENTO! Al estar el fuego encendido, la ruda criogénica se expandió brutalmente liberando una densa nube de gas amnésico en el aula.");
+                
+                // EFECTO BLUR EN LA PANTALLA DEL ALUMNO
+                document.body.classList.add("gas-active");
+                actualizarConsola("[ERROR SENSORIAL]: El vapor ha nublado tu visión y alterado tu memoria. Descarga tu reporte de accidente inmediatamente.");
+            } else {
+                // RUTA DEL ACCESO COMPROBADO Y EXITOSO
+                estadoFinal = "DESTILADO ESTABILIZADO (Excelencia Alquímica)";
+                codigoValidacion = "[SNAPEPOC2-AMNESIA]";
+                
+                liquido.className = "liquid plateado";
+                consola.style.color = "#2ecc71";
+                actualizarConsola("<br>[🏆 EXCELENCIA]: Contención térmica perfecta. La ausencia de calor permitió fijar la densidad del destilado sin resistencia.");
+                actualizarConsola("[CÓDIGO DE VALIDACIÓN]: Esencia de Latencia Álmica Purificada. Código: <b>[SNAPEPOC2-AMNESIA]</b>");
+            }
+
+            // Carga de datos dinámicos en la plantilla PDF
+            document.getElementById("pdf-intentos").innerText = numeroIntentos;
+            document.getElementById("pdf-estado").innerText = estadoFinal;
+            document.getElementById("pdf-codigo").innerText = codigoValidacion;
+            
+            const txtDictamen = document.getElementById("pdf-texto-dictamen");
+            const boxDictamen = document.getElementById("pdf-dictamen-box");
+            
+            if (codigoValidacion === "[SNAPEPOC2-AMNESIA]") {
+                boxDictamen.className = "pdf-dictamen";
+                txtDictamen.innerHTML = "<strong>DICTAMEN DEL DIRECTOR:</strong> Rigurosidad analítica intachable. El operario ha completado con éxito el protocolo de destilación al vacío de la Esencia de Latencia Álmica sin vulnerar los límites térmicos del sistema. Certificación de Excelencia concedida.";
+            } else {
+                boxDictamen.className = "pdf-dictamen fail";
+                txtDictamen.innerHTML = "<strong>DICTAMEN DEL DIRECTOR:</strong> Incompetencia crítica en la contención de volátiles. El alumno inyectó el compuesto criogénico manteniendo los quemadores encendidos, provocando una emanación de gas amnésico masivo que afectó los registros del laboratorio. Reprobado.";
+            }
+        }
+
+        function descargarPDFClase2() {
+            const elementoPDF = document.getElementById("pdf-template");
+            elementoPDF.style.display = "block"; // Visibilidad temporal para captura
+            
+            const opciones = {
+                margin:       15,
+                filename:     `Certificado_Latencia_Intento_${numeroIntentos}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, backgroundColor: '#0b1319' },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opciones).from(elementoPDF).save().then(() => {
+                elementoPDF.style.display = "none"; // Ocultar nuevamente
+            });
+        }
+
+        function reiniciarMesa() {
+            numeroIntentos++;
+            statsDisplay.innerText = `🔮 HISTORIAL DEL OPERARIO: Intento Actual N° ${numeroIntentos}`;
+            
+            tieneLagrimas = false;
+            vacioActivo = false
