@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laboratorio Avanzado de Pociones - Cátedra Snape</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Estilos de la Interfaz de las Mazmorras */
+        /* Estilos de la Interfaz del Laboratorio (Pantalla) */
         body {
             background-color: #060c08;
             color: #d1f2eb;
@@ -58,12 +59,12 @@
             font-weight: bold;
         }
 
-        /* Representación Visual del Caldero */
+        /* El Caldero Visual */
         .caldero-display {
             width: 160px;
             height: 160px;
             background: radial-gradient(circle at 30% 30%, #2c3e50, #0f171e);
-            border: 6px solid #7f8c8d; /* Color Plata Pura */
+            border: 6px solid #7f8c8d;
             border-radius: 50% 50% 45% 45%;
             margin: 20px auto;
             position: relative;
@@ -71,7 +72,6 @@
             transition: all 0.5s ease;
         }
 
-        /* Líquido interno */
         .liquid {
             position: absolute;
             top: 25px;
@@ -83,12 +83,10 @@
             transition: background-color 0.8s ease, box-shadow 0.8s ease;
         }
 
-        /* Estados del Líquido */
         .liquid.agua { background-color: #3498db; box-shadow: inset 0 0 15px #2980b9; }
         .liquid.hongo { background-color: #7f8c8d; box-shadow: inset 0 0 15px #616a6b; }
         .liquid.esmeralda { background-color: #2ecc71; box-shadow: inset 0 0 25px #27ae60, 0 0 15px #2ecc71; }
         
-        /* Efecto de Fuego */
         .fire-burner {
             width: 80px;
             height: 15px;
@@ -99,7 +97,7 @@
         }
         .fire-burner.on { background-color: #e67e22; box-shadow: 0 5px 15px #e67e22; }
 
-        /* Consola de Texto del Ministerio */
+        /* Consola de Mensajes */
         .console-box {
             background-color: #030805;
             border: 1px solid #1c4d32;
@@ -114,7 +112,7 @@
             font-size: 10pt;
         }
 
-        /* Panel de Control de Reactivos y Actuadores */
+        /* Botonera */
         .controls-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -157,7 +155,7 @@
             background-color: #9a7d0a;
         }
 
-        /* Estado Catastrófico de Implosión */
+        /* Interfaz en caso de error catastrófico */
         .interface-container.implosion {
             border-color: #922b21;
             box-shadow: 0 0 25px #922b21;
@@ -170,6 +168,91 @@
         .interface-container.implosion .liquid {
             background-color: #922b21 !important;
             box-shadow: 0 0 30px #c0392b !important;
+        }
+
+        /* =========================================================
+           ESTILOS ESPECÍFICOS PARA EL PERGAMINO PDF (OCULTO EN WEB)
+           ========================================================= */
+        #pdf-template {
+            display: none;
+            background-color: #0d1611;
+            color: #e2ece7;
+            font-family: 'Times New Roman', Times, serif;
+            padding: 35px;
+            border: 5px double #1e5c35;
+            width: 620px;
+            margin: 0 auto;
+        }
+
+        .pdf-header {
+            text-align: center;
+            border-bottom: 2px solid #1e5c35;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .pdf-title {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .pdf-subtitle {
+            font-size: 11pt;
+            font-style: italic;
+            color: #8fa89b;
+            margin: 5px 0 0 0;
+        }
+
+        .pdf-section {
+            margin-bottom: 20px;
+            font-size: 12pt;
+        }
+
+        .pdf-field {
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #1c4d32;
+            padding-bottom: 6px;
+        }
+
+        .pdf-label {
+            font-weight: bold;
+            color: #52be80;
+            text-transform: uppercase;
+            font-size: 10pt;
+            display: inline-block;
+            width: 220px;
+        }
+
+        .pdf-value {
+            color: #ffffff;
+        }
+
+        .pdf-dictamen {
+            background-color: #072211;
+            border-left: 4px solid #52be80;
+            padding: 15px;
+            margin-top: 30px;
+            font-style: italic;
+            text-align: justify;
+            line-height: 1.5;
+        }
+
+        .pdf-dictamen.fail {
+            background-color: #240a07;
+            border-left-color: #ec7063;
+        }
+
+        .pdf-footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 9.5pt;
+            color: #617c6e;
+            border-top: 1px solid #1e5c35;
+            padding-top: 12px;
         }
     </style>
 </head>
@@ -199,21 +282,62 @@
             <button id="btn-mezclar" onclick="mezclarAntihorario()">Ejecutar Rotación Antihoraria (4 min)</button>
             <button id="btn-bilis" onclick="agregarBilis()">Añadir 2 Gotas de Bilis de Armadillo</button>
             
-            <button id="btn-descargar" class="btn-action" onclick="descargarResultados()" disabled>Descargar Pergamino de Resultados</button>
+            <button id="btn-descargar" class="btn-action" onclick="descargarPDFResultados()" disabled>Descargar Pergamino Oficial (PDF)</button>
             
             <button id="btn-reiniciar" onclick="reiniciarLaboratorio()" style="grid-column: span 2; background-color: #1b1a1a; border-color: #333;">Limpiar Mesa de Trabajo (Siguiente Intento)</button>
         </div>
     </div>
 
+    <div id="pdf-template">
+        <div class="pdf-header">
+            <div class="pdf-title">Pergamino Oficial de Certificación</div>
+            <div class="pdf-subtitle">Hogwarts Orión • Registro de Logros de la Dirección de Mazmorras</div>
+        </div>
+
+        <div class="pdf-section">
+            <div class="pdf-field">
+                <span class="pdf-label">Asignatura del Castillo:</span>
+                <span class="pdf-value">Pociones Avanzadas (Mesa Clínica N°1)</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Cátedra Regente:</span>
+                <span class="pdf-value">Director Jeremías Snape</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Sustancia Ensayada:</span>
+                <span class="pdf-value">Elíxir de Inversión de Entalpía Mágica</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Intentos Realizados:</span>
+                <span class="pdf-value" id="pdf-intentos">1</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Estado de la Estructura:</span>
+                <span class="pdf-value" id="pdf-estado">-</span>
+            </div>
+            <div class="pdf-field">
+                <span class="pdf-label">Código de Validación:</span>
+                <span class="pdf-value" id="pdf-codigo" style="font-family: monospace; font-weight: bold;">-</span>
+            </div>
+        </div>
+
+        <div class="pdf-dictamen" id="pdf-dictamen-box">
+            <span id="pdf-texto-dictamen">-</span>
+        </div>
+
+        <div class="pdf-footer">
+            ~~••~~••~~• Documento Validado Bajo Sello Mágico Inquebrantable •๑۩⚗️۩๑•~~••~~••~~
+        </div>
+    </div>
+
     <script>
-        // Variables de Estado del Laboratorio de Snape
+        // Variables de Control Interno
         let fuegoEncendido = false;
         let tieneAgua = false;
         let tieneHongos = false;
         let mezcladoCorrecto = false;
         let claseTerminada = false;
         
-        // Contadores del Director
         let numeroIntentos = 1;
         let statusFinalPocion = "En proceso de destilación";
         let codigoValidacion = "[NINGUNO]";
@@ -221,7 +345,6 @@
         const consola = document.getElementById("consola");
         const liquido = document.getElementById("pocion-liquido");
         const quemador = document.getElementById("quemador");
-        const caldero = document.getElementById("caldero");
         const interfaz = document.getElementById("lab-interface");
         const btnFuego = document.getElementById("btn-fuego");
         const btnDescargar = document.getElementById("btn-descargar");
@@ -235,7 +358,6 @@
         function alternarFuego() {
             if (claseTerminada) return;
             fuegoEncendido = !fuegoEncendido;
-            
             if (fuegoEncendido) {
                 quemador.classList.add("on");
                 btnFuego.innerText = "Apagar Quemador";
@@ -252,7 +374,7 @@
             tieneAgua = true;
             document.getElementById("btn-agua").disabled = true;
             liquido.classList.add("agua");
-            actualizarConsola("[QUÍMICO]: 500ml de fluido bendito destilado al vacío introducido en el contenedor.");
+            actualizarConsola("[QUÍMICO]: 500ml de fluido bendito destilado al vacío introducido.");
         }
 
         function agregarHongos() {
@@ -264,28 +386,28 @@
             tieneHongos = true;
             document.getElementById("btn-hongos").disabled = true;
             liquido.className = "liquid hongo";
-            actualizarConsola("[BIOLÓGICO]: Esporas de hongo de sombra añadidas. El fluido adquiere un tono gris opaco.");
+            actualizarConsola("[BIOLÓGICO]: Esporas de hongo de sombra añadidas. Tono gris opaco.");
         }
 
         function mezclarAntihorario() {
             if (claseTerminada) return;
             if (!tieneHongos) {
-                actualizarConsola("[FALLO]: No hay densidad orgánica que organizar cinética en la mezcla.");
+                actualizarConsola("[FALLO]: No hay densidad orgánica que organizar cinética.");
                 return;
             }
             if (!fuegoEncendido) {
-                actualizarConsola("[FALLO]: Las cadenas moleculares están congeladas. Necesitas calor para inducir la rotación.");
+                actualizarConsola("[FALLO]: Las cadenas moleculares están congeladas. Requiere calor.");
                 return;
             }
             mezcladoCorrecto = true;
             document.getElementById("btn-mezclar").disabled = true;
-            actualizarConsola("[CINÉTICA]: Movimientos circulares antihorarios ejecutados por 4 minutos. Alineación rúnica lograda.");
+            actualizarConsola("[CINÉTICA]: Rotación antihoraria ejecutada. Alineación rúnica lograda.");
         }
 
         function agregarBilis() {
             if (claseTerminada) return;
             if (!mezcladoCorrecto) {
-                actualizarConsola("[SNAOPE]: Añadir reactivos sin balancear la masa es el acto de un Gryffindor tonto.");
+                actualizarConsola("[SNAOPE]: Añadir reactivos sin balancear la masa es un acto imprudente.");
                 return;
             }
 
@@ -293,62 +415,60 @@
             claseTerminada = true;
             btnDescargar.disabled = false;
 
-            // EXAMEN DE PUNTO CRÍTICO DE CONTROL
+            // Procesamiento de resultados finales según el estado del fuego
             if (fuegoEncendido) {
-                // RUTA DEL DESASTRE
                 statusFinalPocion = "IMPLOSIÓN CATASTRÓFICA (Fracaso Crítico)";
                 codigoValidacion = "[SNA-DESASTRE-FALLIDO]";
                 interfaz.classList.add("implosion");
                 consola.style.color = "#ec7063";
-                actualizarConsola("<br>[🚨 CATASTROFE]: ¡IMPLOSIÓN DEL SISTEMA! La bilis reaccionó violentamente con el calor residual del quemador activo. Coeficiente Ω colapsado a valores negativos.");
-                actualizarConsola("[PENALIZACIÓN]: Has fracasado. Descarga tu reporte de desastre obligatoriamente.");
+                actualizarConsola("<br>[🚨 CATASTROFE]: ¡IMPLOSIÓN DEL SISTEMA! La bilis reaccionó con el fuego activo. Coeficiente Ω colapsado.");
             } else {
-                // RUTA DEL ÉXITO
                 statusFinalPocion = "FILTRO ESTABILIZADO (Excelencia Absoluta)";
                 codigoValidacion = "[SNAPEPOC1-OK]";
                 liquido.className = "liquid esmeralda";
                 consola.style.color = "#58d68d";
-                actualizarConsola("<br>[🏆 EXCELENCIA]: La temperatura estática permitió la absorción molecular sin resistencia.");
-                actualizarConsola("[CÓDIGO DE VALIDACIÓN]: Filtro Antitérmico de Snape Estabilizado. Código: <b>[SNAPEPOC1-OK]</b>");
+                actualizarConsola("<br>[🏆 EXCELENCIA]: Filtro Antitérmico de Snape Estabilizado de manera perfecta.");
+            }
+
+            // Guardar datos acumulados dentro del pergamino oculto para el PDF
+            document.getElementById("pdf-intentos").innerText = numeroIntentos;
+            document.getElementById("pdf-estado").innerText = statusFinalPocion;
+            document.getElementById("pdf-codigo").innerText = codigoValidacion;
+            
+            const txtDictamen = document.getElementById("pdf-texto-dictamen");
+            const boxDictamen = document.getElementById("pdf-dictamen-box");
+            
+            if (codigoValidacion === "[SNAPEPOC1-OK]") {
+                boxDictamen.className = "pdf-dictamen";
+                txtDictamen.innerHTML = "<strong>DICTAMEN DEL DIRECTOR:</strong> Excelente precisión molecular. El alumno demostró frialdad mental y respeto absoluto por las leyes del termómetro rúnico durante la destilación del Filtro Antitérmico en las Mazmorras del castillo. Calificación: Aprobado con Honores de Cátedra.";
+            } else {
+                boxDictamen.className = "pdf-dictamen fail";
+                txtDictamen.innerHTML = "<strong>DICTAMEN DEL DIRECTOR:</strong> Incompetencia alarmante en el manejo de reactivos volátiles. El operario causó una inversión térmica catastrófica en el Coeficiente Ω por no mitigar la fuente de fuego antes de inyectar la bilis de armadillo. Calificación: Reprobado.";
             }
         }
 
-        function descargarResultados() {
-            // Construcción del documento de texto inmersivo
-            const textoReporte = 
-`~~••~~••~~•๑۩ CÁTEDRA SNAPEPOCIONES ۩๑•~~••~~••~~
-         HOGWARTS ORIÓN - REPORTE CLÍNICO COMPROBADO
-         
-Operario Examinado: Estudiante de Hogwarts Orión
-Asignatura: Pociones Avanzadas (Mesa de Destilación N°1)
-Poción Ensayada: Elíxir de Inversión de Entalpía Mágica
+        function descargarPDFResultados() {
+            const elementoPDF = document.getElementById("pdf-template");
+            
+            // Hacemos el elemento visible temporalmente para que html2pdf pueda maquetarlo
+            elementoPDF.style.display = "block";
+            
+            const opciones = {
+                margin:       15,
+                filename:     `Certificado_Mazmorras_Intento_${numeroIntentos}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, backgroundColor: '#0d1611' },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
----------------------------------------------------------
-[MÉTRICAS CLÍNICAS REGISTRADAS POR EL LABORATORIO]
----------------------------------------------------------
-* Número total de intentos realizados: ${numeroIntentos}
-* Estado estructural del caldero: ${statusFinalPocion}
-* Código Oficial de Validación Ministerial: ${codigoValidacion}
-
----------------------------------------------------------
-[DICTAMEN DE LA DIRECCIÓN]:
-${codigoValidacion === "[SNAPEPOC1-OK]" 
-? "Excelente precisión molecular. El alumno demostró frialdad mental y respeto absoluto por las leyes del termómetro rúnico. Aprobado con honores." 
-: "Incompetencia alarmante. El operario causó una inversión térmica por no apagar el quemador a tiempo. Obligado a limpiar los residuos de las Mazmorras."}
----------------------------------------------------------
-Documento firmado digitalmente bajo los registros mágicos de la Dirección.
-~~••~~••~~•๑۩⚗️۩๑•~~••~~••~~`;
-
-            const blob = new Blob([textoReporte], { type: "text/plain;charset=utf-8" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Reporte_Mazmorras_Intento_${numeroIntentos}.txt`;
-            link.click();
-            URL.revokeObjectURL(link.href);
+            // Iniciar captura y descarga del PDF
+            html2pdf().set(opciones).from(elementoPDF).save().then(() => {
+                // Volvemos a ocultar el bloque rúnico una vez descargado
+                elementoPDF.style.display = "none";
+            });
         }
 
         function reiniciarLaboratorio() {
-            // Al limpiar la mesa, se incrementa el contador de intentos
             numeroIntentos++;
             statsDisplay.innerText = `🔮 HISTORIAL DEL OPERARIO: Intento Actual N° ${numeroIntentos}`;
             
