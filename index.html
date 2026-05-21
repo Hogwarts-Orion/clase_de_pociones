@@ -44,7 +44,18 @@
             font-style: italic;
             color: #89bfa0;
             font-size: 11pt;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
+        }
+
+        .stats-bar {
+            background-color: #050f0a;
+            border: 1px solid #163e28;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 10.5pt;
+            margin-bottom: 20px;
+            color: #52be80;
+            font-weight: bold;
         }
 
         /* Representación Visual del Caldero */
@@ -96,7 +107,7 @@
             padding: 15px;
             text-align: left;
             border-radius: 4px;
-            height: 100px;
+            height: 110px;
             overflow-y: auto;
             margin-bottom: 25px;
             color: #48c9b0;
@@ -136,6 +147,16 @@
             box-shadow: none;
         }
 
+        .btn-action {
+            background-color: #7d6608;
+            border-color: #9a7d0a;
+            color: #ffffff;
+        }
+        
+        .btn-action:hover {
+            background-color: #9a7d0a;
+        }
+
         /* Estado Catastrófico de Implosión */
         .interface-container.implosion {
             border-color: #922b21;
@@ -158,6 +179,10 @@
         <h1>Mesa de Destilación Alquímica</h1>
         <div class="sub-header">Cátedra del Profesor Jeremías Snape • Certificación Oficial de Alquimia</div>
 
+        <div class="stats-bar" id="stats-display">
+            🔮 HISTORIAL DEL OPERARIO: Intento Actual N° 1
+        </div>
+
         <div class="caldero-display" id="caldero">
             <div class="liquid" id="pocion-liquido"></div>
         </div>
@@ -173,7 +198,10 @@
             <button id="btn-hongos" onclick="agregarHongos()">Incorporar Esporas de Hongo de Sombra</button>
             <button id="btn-mezclar" onclick="mezclarAntihorario()">Ejecutar Rotación Antihoraria (4 min)</button>
             <button id="btn-bilis" onclick="agregarBilis()">Añadir 2 Gotas de Bilis de Armadillo</button>
-            <button id="btn-reiniciar" onclick="reiniciarLaboratorio()" style="grid-column: span 2; background-color: #1b1a1a; border-color: #333;">Limpiar Mesa de Trabajo</button>
+            
+            <button id="btn-descargar" class="btn-action" onclick="descargarResultados()" disabled>Descargar Pergamino de Resultados</button>
+            
+            <button id="btn-reiniciar" onclick="reiniciarLaboratorio()" style="grid-column: span 2; background-color: #1b1a1a; border-color: #333;">Limpiar Mesa de Trabajo (Siguiente Intento)</button>
         </div>
     </div>
 
@@ -184,6 +212,11 @@
         let tieneHongos = false;
         let mezcladoCorrecto = false;
         let claseTerminada = false;
+        
+        // Contadores del Director
+        let numeroIntentos = 1;
+        let statusFinalPocion = "En proceso de destilación";
+        let codigoValidacion = "[NINGUNO]";
 
         const consola = document.getElementById("consola");
         const liquido = document.getElementById("pocion-liquido");
@@ -191,6 +224,8 @@
         const caldero = document.getElementById("caldero");
         const interfaz = document.getElementById("lab-interface");
         const btnFuego = document.getElementById("btn-fuego");
+        const btnDescargar = document.getElementById("btn-descargar");
+        const statsDisplay = document.getElementById("stats-display");
 
         function actualizarConsola(texto) {
             consola.innerHTML += "<br>" + texto;
@@ -255,31 +290,75 @@
             }
 
             document.getElementById("btn-bilis").disabled = true;
+            claseTerminada = true;
+            btnDescargar.disabled = false;
 
             // EXAMEN DE PUNTO CRÍTICO DE CONTROL
             if (fuegoEncendido) {
-                // RUTA DEL DESASTRE: La bilis entra en contacto con la entalpía activa
-                claseTerminada = true;
+                // RUTA DEL DESASTRE
+                statusFinalPocion = "IMPLOSIÓN CATASTRÓFICA (Fracaso Crítico)";
+                codigoValidacion = "[SNA-DESASTRE-FALLIDO]";
                 interfaz.classList.add("implosion");
                 consola.style.color = "#ec7063";
-                actualizarConsola("<br>[🚨 CATASTROFE]: ¡IMPLOSIÓN DEL SISTEMA! La bilis reaccionó violentamente con el calor residual del quemador activo. Coeficiente Ω colapsado a valores negativos. El caldero se ha reducido a escoria ácida.");
-                actualizarConsola("[PENALIZACIÓN]: Has fracasado en la mesa del Director. Reporta el desastre en tu pergamino: -7.000 Galeones.");
+                actualizarConsola("<br>[🚨 CATASTROFE]: ¡IMPLOSIÓN DEL SISTEMA! La bilis reaccionó violentamente con el calor residual del quemador activo. Coeficiente Ω colapsado a valores negativos.");
+                actualizarConsola("[PENALIZACIÓN]: Has fracasado. Descarga tu reporte de desastre obligatoriamente.");
             } else {
-                // RUTA DEL ÉXITO: El quemador estaba apagado
-                claseTerminada = true;
+                // RUTA DEL ÉXITO
+                statusFinalPocion = "FILTRO ESTABILIZADO (Excelencia Absoluta)";
+                codigoValidacion = "[SNAPEPOC1-OK]";
                 liquido.className = "liquid esmeralda";
                 consola.style.color = "#58d68d";
-                actualizarConsola("<br>[🏆 EXCELENCIA]: La temperatura estática permitió la absorción molecular sin resistencia. Las geometrías cristalinas se alinean perfectamente en la superficie.");
-                actualizarConsola("[CÓDIGO DE VALIDACIÓN]: Filtro Antitérmico de Snape Estabilizado con Éxito. Añade esto a tu pergamino de Tarea: <b>[SNAPEPOC1-OK]</b>");
+                actualizarConsola("<br>[🏆 EXCELENCIA]: La temperatura estática permitió la absorción molecular sin resistencia.");
+                actualizarConsola("[CÓDIGO DE VALIDACIÓN]: Filtro Antitérmico de Snape Estabilizado. Código: <b>[SNAPEPOC1-OK]</b>");
             }
         }
 
+        function descargarResultados() {
+            // Construcción del documento de texto inmersivo
+            const textoReporte = 
+`~~••~~••~~•๑۩ CÁTEDRA SNAPEPOCIONES ۩๑•~~••~~••~~
+         HOGWARTS ORIÓN - REPORTE CLÍNICO COMPROBADO
+         
+Operario Examinado: Estudiante de Hogwarts Orión
+Asignatura: Pociones Avanzadas (Mesa de Destilación N°1)
+Poción Ensayada: Elíxir de Inversión de Entalpía Mágica
+
+---------------------------------------------------------
+[MÉTRICAS CLÍNICAS REGISTRADAS POR EL LABORATORIO]
+---------------------------------------------------------
+* Número total de intentos realizados: ${numeroIntentos}
+* Estado estructural del caldero: ${statusFinalPocion}
+* Código Oficial de Validación Ministerial: ${codigoValidacion}
+
+---------------------------------------------------------
+[DICTAMEN DE LA DIRECCIÓN]:
+${codigoValidacion === "[SNAPEPOC1-OK]" 
+? "Excelente precisión molecular. El alumno demostró frialdad mental y respeto absoluto por las leyes del termómetro rúnico. Aprobado con honores." 
+: "Incompetencia alarmante. El operario causó una inversión térmica por no apagar el quemador a tiempo. Obligado a limpiar los residuos de las Mazmorras."}
+---------------------------------------------------------
+Documento firmado digitalmente bajo los registros mágicos de la Dirección.
+~~••~~••~~•๑۩⚗️۩๑•~~••~~••~~`;
+
+            const blob = new Blob([textoReporte], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_Mazmorras_Intento_${numeroIntentos}.txt`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
         function reiniciarLaboratorio() {
+            // Al limpiar la mesa, se incrementa el contador de intentos
+            numeroIntentos++;
+            statsDisplay.innerText = `🔮 HISTORIAL DEL OPERARIO: Intento Actual N° ${numeroIntentos}`;
+            
             fuegoEncendido = false;
             tieneAgua = false;
             tieneHongos = false;
             mezcladoCorrecto = false;
             claseTerminada = false;
+            statusFinalPocion = "En proceso de destilación";
+            codigoValidacion = "[NINGUNO]";
             
             quemador.className = "fire-burner";
             liquido.className = "liquid";
@@ -292,8 +371,9 @@
             document.getElementById("btn-mezclar").disabled = false;
             document.getElementById("btn-bilis").disabled = false;
             document.getElementById("btn-fuego").disabled = false;
+            btnDescargar.disabled = true;
             
-            consola.innerHTML = "[SISTEMA]: Mesa de trabajo purificada y restablecida por la Dirección. Caldero listo.";
+            consola.innerHTML = `[SISTEMA]: Mesa purificada. Iniciando intento número ${numeroIntentos}. Caldero listo.`;
         }
     </script>
 </body>
