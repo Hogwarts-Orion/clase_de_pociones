@@ -2,81 +2,107 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Laboratorio de Alquimia - Cátedra Snape</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Destilación al Vacío - Cátedra Snape</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Interfaz del Caldero */
-        body { 
-            background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); 
-            color: #d1f2eb; font-family: 'Georgia', serif; 
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px;
-        }
-        .caldero {
-            width: 200px; height: 180px; background: #111; border: 8px solid #333;
-            border-radius: 0 0 100px 100px; position: relative; margin: 50px auto;
-            box-shadow: 0 10px 20px #000;
-        }
-        .liquido {
-            position: absolute; bottom: 10px; left: 10px; right: 10px; height: 40px;
-            background: #2ecc71; border-radius: 0 0 80px 80px; transition: 0.5s;
-        }
-        .panel { background: #0a0a0a; border: 2px solid #4a3e20; padding: 20px; width: 350px; text-align: center; border-radius: 10px; }
-        button { background: #2c1e0f; color: #d4af37; border: 1px solid #d4af37; padding: 10px; margin: 5px; cursor: pointer; font-family: 'Georgia', serif; }
-        button:disabled { border-color: #333; color: #555; }
+        /* Estilos base manteniendo la estética sombría */
+        body { background-color: #060c08; color: #d1f2eb; font-family: 'Times New Roman', Times, serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .interface-container { background-color: #0c1811; border: 2px solid #1c4d32; box-shadow: 0 0 20px rgba(28, 77, 50, 0.5); border-radius: 8px; width: 100%; max-width: 700px; padding: 25px; text-align: center; }
+        h1 { color: #ffffff; font-size: 20pt; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #1c4d32; padding-bottom: 10px; }
+        .sub-header { font-style: italic; color: #89bfa0; font-size: 11pt; margin-bottom: 15px; }
+        .stats-bar { background-color: #050f0a; border: 1px solid #163e28; padding: 8px; border-radius: 4px; font-size: 10.5pt; margin-bottom: 20px; color: #52be80; font-weight: bold; }
+        
+        .caldero-display { width: 160px; height: 160px; background: radial-gradient(circle at 30% 30%, #2c3e50, #0f171e); border: 6px solid #7f8c8d; border-radius: 50% 50% 45% 45%; margin: 20px auto; position: relative; box-shadow: inset 0 0 20px #000; transition: all 0.5s ease; }
+        .liquid { position: absolute; top: 25px; left: 15px; right: 15px; bottom: 20px; background-color: transparent; border-radius: 50%; transition: 0.8s; }
+        .liquid.iniciado { background-color: #a9cce3; } /* Lágrimas */
+        .liquid.tamizado { background-color: #ccd1d1; } /* Tamiz */
+        .liquid.estabilizado { background-color: #eaeded; } /* Destilado */
+        
+        .fire-burner { width: 80px; height: 15px; background-color: #555; margin: 0 auto; border-radius: 3px; }
+        .fire-burner.on { background-color: #e67e22; box-shadow: 0 5px 15px #e67e22; }
 
-        /* Estructura del PDF (Oculta hasta descargar) */
-        #pdf-template { 
-            display: none; background: #fff; color: #000; padding: 40px; width: 600px; 
-            font-family: 'Times New Roman', serif; border: 2px solid #000; 
-        }
-        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .pdf-table td { border: 1px solid #000; padding: 10px; }
-        .label { font-weight: bold; width: 45%; }
+        .console-box { background-color: #030805; border: 1px solid #1c4d32; font-family: monospace; padding: 15px; text-align: left; height: 110px; overflow-y: auto; margin-bottom: 25px; color: #48c9b0; font-size: 10pt; }
+        .controls-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        button { background-color: #092314; border: 1px solid #1c4d32; color: #e5f0ea; padding: 12px; font-family: 'Times New Roman', serif; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #1c4d32; }
+        button:disabled { color: #44554a; cursor: not-allowed; }
+        
+        /* PDF Template (oculto) */
+        #pdf-template { display: none; background-color: #0d1611; color: #e2ece7; font-family: 'Times New Roman', serif; padding: 35px; border: 5px double #1e5c35; width: 620px; margin: 0 auto; }
+        .pdf-header { text-align: center; border-bottom: 2px solid #1e5c35; margin-bottom: 25px; }
+        .pdf-field { margin-bottom: 12px; border-bottom: 1px dashed #1c4d32; padding-bottom: 6px; }
+        .pdf-label { font-weight: bold; color: #52be80; text-transform: uppercase; font-size: 10pt; display: inline-block; width: 220px; }
     </style>
 </head>
 <body>
 
-    <div class="caldero"><div class="liquido" id="pocion"></div></div>
-    
-    <div class="panel">
-        <h2 style="color:#d4af37;">Cátedra del Director Snape</h2>
-        <button onclick="prepararPocion()">Preparar Sustancia</button>
-        <button id="btn-pdf" onclick="descargarPDF()" disabled>Descargar Pergamino Oficial</button>
+    <div class="interface-container" id="lab-interface">
+        <h1>Destilación al Vacío</h1>
+        <div class="sub-header">Cátedra Snape • Certificación Clase 2: Esencia de Latencia Álmica</div>
+
+        <div class="stats-bar" id="stats-display">🔮 HISTORIAL: Intento N° 1</div>
+
+        <div class="caldero-display"><div class="liquid" id="pocion-liquido"></div></div>
+        <div class="fire-burner" id="quemador"></div>
+
+        <div class="console-box" id="consola">[SISTEMA]: Caldero hermético sellado. Listo para destilación al vacío.</div>
+
+        <div class="controls-grid">
+            <button onclick="inyectarLagrimas()">Inyectar 3 Lágrimas</button>
+            <button onclick="activarBombaVacio()">Activar Bomba de Vacío</button>
+            <button id="btn-fuego" onclick="alternarFuego()">Encender Calor Sutil</button>
+            <button onclick="filtrarTamiz()">Filtrar por Tamiz</button>
+            <button class="btn-action" onclick="inyectarRuda()" style="grid-column: span 2; background-color: #7d6608;">Inyectar Ruda (Finalizar)</button>
+            <button id="btn-descargar" onclick="descargarPDFResultados()" disabled>Descargar Pergamino Oficial (PDF)</button>
+        </div>
     </div>
 
     <div id="pdf-template">
-        <div style="text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px;">
-            <h1 style="margin:0; font-size: 18pt;">PERGAMINO OFICIAL DE CERTIFICACIÓN</h1>
-            <p>Hogwarts Orión | Registro de Logros de la Dirección de Mazmorras</p>
+        <div class="pdf-header">
+            <h1 style="margin:0;">Pergamino Oficial de Certificación</h1>
+            <p>Hogwarts Orión • Dirección de Mazmorras</p>
         </div>
-        <table class="pdf-table">
-            <tr><td class="label">ASIGNATURA DEL CASTILLO:</td><td>Pociones Avanzadas (Mesa Clínica N°2)</td></tr>
-            <tr><td class="label">CÁTEDRA REGENTE:</td><td>Director Jeremías Snape</td></tr>
-            <tr><td class="label">SUSTANCIA ENSAYADA:</td><td>Esencia de Latencia Álmica</td></tr>
-            <tr><td class="label">INTENTOS REALIZADOS:</td><td id="p-intentos">1</td></tr>
-            <tr><td class="label">ESTADO DE LA ESTRUCTURA:</td><td>FILTRO ESTABILIZADO (Excelencia Absoluta)</td></tr>
-            <tr><td class="label">CÓDIGO DE VALIDACIÓN:</td><td>[SNAPEPOC1-OK]</td></tr>
-        </table>
-        <div style="margin-top:30px; border-left: 5px solid #000; padding-left:15px; font-style: italic;">
-            <p><b>DICTAMEN DEL DIRECTOR:</b></p>
-            <p>Excelente precisión molecular. El alumno demostró frialdad mental y respeto absoluto por las leyes termodinámicas durante la destilación. Certificación concedida.</p>
+        <div class="pdf-field"><span class="pdf-label">Asignatura:</span> Pociones Avanzadas (Mesa Clínica N°2)</div>
+        <div class="pdf-field"><span class="pdf-label">Sustancia:</span> Esencia de Latencia Álmica</div>
+        <div class="pdf-field"><span class="pdf-label">Intentos:</span> <span id="pdf-intentos">1</span></div>
+        <div class="pdf-field"><span class="pdf-label">Estado:</span> <span id="pdf-estado">-</span></div>
+        <div class="pdf-field"><span class="pdf-label">Código:</span> <span id="pdf-codigo" style="font-family:monospace;">-</span></div>
+        <div style="margin-top:30px; border-left: 4px solid #52be80; padding: 15px; font-style: italic;">
+            <p><strong>DICTAMEN DEL DIRECTOR:</strong> <span id="pdf-dictamen"></span></p>
         </div>
     </div>
 
     <script>
-        let intentos = 1;
-        function prepararPocion() {
-            document.getElementById('pocion').style.background = '#2ecc71';
-            document.getElementById('btn-pdf').disabled = false;
+        let lagrimas=false, vacio=false, calor=false, tamiz=false, terminada=false, intentos=1;
+        
+        function actualizarConsola(t) { 
+            const c = document.getElementById("consola"); 
+            c.innerHTML += "<br>" + t; c.scrollTop = c.scrollHeight; 
         }
-        function descargarPDF() {
+
+        function inyectarLagrimas() { lagrimas=true; document.getElementById("pocion-liquido").className="liquid iniciado"; actualizarConsola("[QUÍMICO]: Lágrimas integradas."); }
+        function activarBombaVacio() { vacio=true; actualizarConsola("[MECÁNICO]: Bomba de vacío operativa."); }
+        function alternarFuego() { calor=!calor; document.getElementById("quemador").classList.toggle("on"); actualizarConsola("[TÉRMICO]: Calor " + (calor ? "activado." : "apagado.")); }
+        function filtrarTamiz() { if(lagrimas && vacio && calor) { tamiz=true; document.getElementById("pocion-liquido").className="liquid tamizado"; actualizarConsola("[FILTRO]: Estructura tamizada."); } }
+
+        function inyectarRuda() {
+            if(!tamiz) { actualizarConsola("[ERROR]: Filtrado incompleto."); return; }
+            terminada = true;
+            document.getElementById("btn-descargar").disabled = false;
+            
+            const esExcelencia = !calor; // Regla de clase 2: no debe estar el fuego al inyectar ruda
+            document.getElementById("pdf-intentos").innerText = intentos;
+            document.getElementById("pdf-estado").innerText = esExcelencia ? "DESTILADO ESTABILIZADO" : "FALLO TÉRMICO";
+            document.getElementById("pdf-codigo").innerText = esExcelencia ? "[SNAPEPOC2-OK]" : "[SNAPEPOC2-FALLIDO]";
+            document.getElementById("pdf-dictamen").innerText = esExcelencia ? "Precisión molecular excelente. Estabilidad absoluta lograda." : "Incompetencia. El fuego activo destruyó la latencia álmica.";
+            document.getElementById("pocion-liquido").className = esExcelencia ? "liquid estabilizado" : "liquid";
+        }
+
+        function descargarPDFResultados() {
             const el = document.getElementById("pdf-template");
             el.style.display = "block";
-            document.getElementById('p-intentos').innerText = intentos;
-            html2pdf().from(el).save("Certificado_Mazmorras_Intento_" + intentos + ".pdf").then(() => {
-                el.style.display = "none";
-                intentos++;
-            });
+            html2pdf().from(el).save("Certificado_Clase2.pdf").then(() => el.style.display = "none");
         }
     </script>
 </body>
