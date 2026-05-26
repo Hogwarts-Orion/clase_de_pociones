@@ -16,125 +16,87 @@
         .vacuum-seal { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 35px; height: 35px; background-color: #2c3e50; border: 3px solid #7f8c8d; border-radius: 50%; font-family: monospace; font-size: 7.5pt; line-height: 29px; color: #e74c3c; font-weight: bold; }
         .vacuum-seal.sealed { color: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
         .liquid { position: absolute; left: 12px; right: 12px; bottom: 15px; top: 140px; background-color: transparent; border-radius: 10px 10px 8px 8px; transition: all 0.8s ease; }
-        .liquid.lagrimas { top: 70px; background-color: #a9cce3; box-shadow: inset 0 0 15px #5499c7, 0 0 10px rgba(169, 204, 227, 0.5); }
-        .liquid.tamiz { top: 65px; background-color: #ccd1d1; box-shadow: inset 0 0 15px #7f8c8d; }
-        .liquid.plateado { top: 60px; background-color: #eaeded; box-shadow: inset 0 0 25px #ffffff, 0 0 20px rgba(255, 255, 255, 0.8); }
-        .liquid.vaporizado { top: 20px; background-color: #7b7d7d !important; box-shadow: 0 0 35px #95a5a6 !important; }
-        .fire-burner { width: 70px; height: 12px; background-color: #444; margin: 0 auto; border-radius: 3px; transition: background-color 0.3s; }
+        .liquid.lagrimas { top: 70px; background-color: #a9cce3; }
+        .liquid.tamiz { top: 65px; background-color: #ccd1d1; }
+        .liquid.plateado { top: 60px; background-color: #eaeded; box-shadow: 0 0 25px #ffffff; }
+        .liquid.vaporizado { top: 20px; background-color: #7b7d7d !important; }
+        .fire-burner { width: 70px; height: 12px; background-color: #444; margin: 0 auto; border-radius: 3px; }
         .fire-burner.on { background-color: #d35400; box-shadow: 0 4px 12px #d35400; }
         .console-box { background-color: #030608; border: 1px solid #172a35; font-family: monospace; padding: 15px; text-align: left; border-radius: 4px; height: 110px; overflow-y: auto; margin-bottom: 25px; color: #5dade2; font-size: 10pt; }
         .controls-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         button { background-color: #0b1a24; border: 1px solid #172a35; color: #d5f5e3; padding: 12px; font-family: 'Times New Roman', Times, serif; font-size: 11pt; cursor: pointer; border-radius: 4px; }
-        button:hover { background-color: #172a35; color: #ffffff; }
         button:disabled { background-color: #050b0f; border-color: #0d171e; color: #34495e; cursor: not-allowed; }
-        .btn-action { background-color: #641e16; border-color: #7b241c; color: #ffffff; }
-        .btn-pdf { background-color: #7d6608; border-color: #9a7d0a; color: #ffffff; }
-        #pdf-template { display: none; background-color: #0b1319; color: #e5e8e8; padding: 35px; border: 5px double #34495e; width: 620px; margin: 0 auto; }
+        .btn-action { background-color: #641e16; border-color: #7b241c; }
+        .btn-pdf { background-color: #7d6608; border-color: #9a7d0a; }
+
+        /* Estilo del Pergamino para el PDF */
+        #pdf-template { display: none; background-color: #fff; color: #000; padding: 40px; width: 500px; text-align: center; border: 5px double #000; }
     </style>
 </head>
 <body>
 
-    <div class="interface-container" id="lab-interface">
+    <div class="interface-container">
         <h1>Mesa de Destilación al Vacío</h1>
         <div class="sub-header">Cátedra del Profesor Jeremías Snape • Certificación Oficial</div>
-
         <div class="stats-bar" id="stats-display">🔮 HISTORIAL DEL OPERARIO: Intento Actual N° 1</div>
-
-        <div class="destilador-display" id="destilador">
-            <div class="vacuum-seal" id="manometro">OFF</div>
-            <div class="liquid" id="pocion-liquido"></div>
-        </div>
+        <div class="destilador-display"><div class="liquid" id="pocion-liquido"></div></div>
         <div class="fire-burner" id="quemador"></div>
-
-        <div class="console-box" id="consola">[SISTEMA]: Contenedor purgado. Esperando matriz base...</div>
+        <div class="console-box" id="consola">[SISTEMA]: Contenedor purgado. Esperando matriz...</div>
 
         <div class="controls-grid">
-            <button id="btn-lagrimas" onclick="inyectarLagrimas()">Inyectar 3 Lágrimas</button>
-            <button id="btn-vacio" onclick="activarBombaVacio()">Activar Bomba Vacío</button>
-            <button id="btn-fuego" onclick="alternarFuego()">Encender Calor Sutil</button>
-            <button id="btn-tamiz" onclick="filtrarBezoar()">Filtrar por Tamiz</button>
-            <button id="btn-ruda" class="btn-action" onclick="inyectarRuda()">Inyectar Ruda</button>
+            <button onclick="inyectarLagrimas()">Inyectar 3 Lágrimas</button>
+            <button onclick="activarBombaVacio()">Activar Bomba Vacío</button>
+            <button onclick="alternarFuego()">Encender Calor Sutil</button>
+            <button onclick="filtrarBezoar()">Filtrar por Tamiz</button>
+            <button class="btn-action" onclick="inyectarRuda()">Inyectar Ruda</button>
             <button id="btn-descargar" class="btn-pdf" onclick="descargarPDFClase2()" disabled>Descargar Certificado</button>
-            <button id="btn-reiniciar" onclick="reiniciarMesa()" style="grid-column: span 2;">Limpiar Mesa (Reiniciar)</button>
+            <button onclick="reiniciarMesa()" style="grid-column: span 2;">Limpiar Mesa (Reiniciar)</button>
         </div>
     </div>
 
+    <div id="pdf-template">
+        <h2 style="border-bottom: 2px solid #000;">PERGAMINO DE CERTIFICACIÓN</h2>
+        <p><strong>Cátedra:</strong> Pociones Avanzadas - Director Snape</p>
+        <p><strong>Resultado:</strong> DESTILADO ESTABILIZADO (PUREZA 100%)</p>
+        <p><strong>Código de Validación:</strong> [SNAPEPOC2-AMNESIA]</p>
+        <br><br><p>~~••~~ Firma de la Cátedra de Mazmorras ~~••~~</p>
+    </div>
+
     <script>
-        let tieneLagrimas = false, vacioActivo = false, fuegoEncendido = false, filtradoHecho = false, operacionTerminada = false, numeroIntentos = 1;
+        let tieneLagrimas=false, vacioActivo=false, fuegoEncendido=false, filtradoHecho=false, operacionTerminada=false, numeroIntentos=1;
 
-        function actualizarConsola(texto) {
-            const consola = document.getElementById("consola");
-            consola.innerHTML += "<br>" + texto;
-            consola.scrollTop = consola.scrollHeight;
-        }
+        function actualizarConsola(t) { const c = document.getElementById("consola"); c.innerHTML += "<br>" + t; c.scrollTop = c.scrollHeight; }
 
-        function inyectarLagrimas() {
-            if (operacionTerminada || tieneLagrimas) return;
-            tieneLagrimas = true;
-            document.getElementById("pocion-liquido").className = "liquid lagrimas";
-            actualizarConsola("[MATRIZ]: Lágrimas inyectadas.");
-        }
-
-        function activarBombaVacio() {
-            if (operacionTerminada || vacioActivo) return;
-            vacioActivo = true;
-            const manometro = document.getElementById("manometro");
-            manometro.innerText = "ON";
-            manometro.classList.add("sealed");
-            actualizarConsola("[VACÍO]: Bomba activa.");
-        }
-
-        function alternarFuego() {
-            if (operacionTerminada) return;
-            fuegoEncendido = !fuegoEncendido;
-            document.getElementById("quemador").classList.toggle("on");
-            actualizarConsola(fuegoEncendido ? "[TÉRMICO]: Calor activo." : "[TÉRMICO]: Calor apagado.");
-        }
-
-        function filtrarBezoar() {
-            if (operacionTerminada || !tieneLagrimas || !vacioActivo || !fuegoEncendido) {
-                actualizarConsola("[FALLO]: Requisitos de filtrado no cumplidos.");
-                return;
-            }
-            filtradoHecho = true;
-            document.getElementById("pocion-liquido").className = "liquid tamiz";
-            actualizarConsola("[TAMIZ]: Fluido filtrado.");
-        }
+        function inyectarLagrimas() { if(operacionTerminada || tieneLagrimas) return; tieneLagrimas=true; document.getElementById("pocion-liquido").className="liquid lagrimas"; actualizarConsola("[MATRIZ]: Lágrimas inyectadas."); }
+        function activarBombaVacio() { if(operacionTerminada || vacioActivo) return; vacioActivo=true; document.getElementById("manometro").innerText="ON"; document.getElementById("manometro").classList.add("sealed"); actualizarConsola("[VACÍO]: Bomba activa."); }
+        function alternarFuego() { if(operacionTerminada) return; fuegoEncendido=!fuegoEncendido; document.getElementById("quemador").classList.toggle("on"); }
+        function filtrarBezoar() { if(operacionTerminada || !tieneLagrimas || !vacioActivo || !fuegoEncendido) return; filtradoHecho=true; document.getElementById("pocion-liquido").className="liquid tamiz"; actualizarConsola("[TAMIZ]: Fluido filtrado."); }
 
         function inyectarRuda() {
-            if (operacionTerminada || !filtradoHecho) return;
-            operacionTerminada = true;
-            const liquido = document.getElementById("pocion-liquido");
-            
-            if (fuegoEncendido) {
-                liquido.className = "liquid vaporizado";
-                actualizarConsola("[🚨 CATASTROFE]: ¡CHOQUE TÉRMICO!");
-                document.body.classList.add("gas-active");
-            } else {
-                liquido.className = "liquid plateado";
-                actualizarConsola("[🏆 EXCELENCIA]: Destilado puro.");
-            }
-            document.getElementById("btn-descargar").disabled = false;
+            if(operacionTerminada || !filtradoHecho) return;
+            operacionTerminada=true;
+            const liq = document.getElementById("pocion-liquido");
+            if(fuegoEncendido) { liq.className="liquid vaporizado"; actualizarConsola("[🚨 CATASTROFE]: ¡CHOQUE TÉRMICO!"); document.body.classList.add("gas-active"); }
+            else { liq.className="liquid plateado"; actualizarConsola("[🏆 EXCELENCIA]: Destilado puro."); document.getElementById("btn-descargar").disabled=false; }
         }
 
         function reiniciarMesa() {
             numeroIntentos++;
             document.getElementById("stats-display").innerText = `🔮 HISTORIAL DEL OPERARIO: Intento Actual N° ${numeroIntentos}`;
-            tieneLagrimas = vacioActivo = fuegoEncendido = filtradoHecho = operacionTerminada = false;
-            
-            document.getElementById("pocion-liquido").className = "liquid";
+            tieneLagrimas=vacioActivo=fuegoEncendido=filtradoHecho=operacionTerminada=false;
+            document.getElementById("pocion-liquido").className="liquid";
             document.getElementById("quemador").classList.remove("on");
-            const manometro = document.getElementById("manometro");
-            manometro.innerText = "OFF";
-            manometro.classList.remove("sealed");
-            
-            document.getElementById("consola").innerHTML = "[SISTEMA]: Mesa limpiada.";
+            document.getElementById("manometro").innerText="OFF";
+            document.getElementById("manometro").classList.remove("sealed");
+            document.getElementById("btn-descargar").disabled=true;
             document.body.classList.remove("gas-active");
-            document.getElementById("btn-descargar").disabled = true;
+            document.getElementById("consola").innerHTML="[SISTEMA]: Mesa limpiada.";
         }
 
         function descargarPDFClase2() {
-            alert("Certificado generado. Recuerda: la precisión es ley.");
+            const el = document.getElementById("pdf-template");
+            el.style.display = "block";
+            html2pdf().from(el).save("Certificado_Snape.pdf").then(() => el.style.display = "none");
         }
     </script>
 </body>
