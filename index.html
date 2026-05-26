@@ -2,46 +2,53 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Laboratorio - Destilación al Vacío</title>
+    <title>Laboratorio de Alquimia - Cátedra Snape</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { background-color: #050a0c; color: #d1e1f2; font-family: 'Times New Roman', serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .interface-container { background-color: #0b1318; border: 2px solid #233d4d; border-radius: 8px; width: 100%; max-width: 700px; padding: 25px; text-align: center; }
-        .controls-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
-        button { background-color: #0b1a24; border: 1px solid #1c4d32; color: #e5f0ea; padding: 12px; cursor: pointer; }
-        
-        /* ESTILO EXACTO DEL PERGAMINO (PDF) */
+        /* Interfaz del Caldero */
+        body { 
+            background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); 
+            color: #d1f2eb; font-family: 'Georgia', serif; 
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px;
+        }
+        .caldero {
+            width: 200px; height: 180px; background: #111; border: 8px solid #333;
+            border-radius: 0 0 100px 100px; position: relative; margin: 50px auto;
+            box-shadow: 0 10px 20px #000;
+        }
+        .liquido {
+            position: absolute; bottom: 10px; left: 10px; right: 10px; height: 40px;
+            background: #2ecc71; border-radius: 0 0 80px 80px; transition: 0.5s;
+        }
+        .panel { background: #0a0a0a; border: 2px solid #4a3e20; padding: 20px; width: 350px; text-align: center; border-radius: 10px; }
+        button { background: #2c1e0f; color: #d4af37; border: 1px solid #d4af37; padding: 10px; margin: 5px; cursor: pointer; font-family: 'Georgia', serif; }
+        button:disabled { border-color: #333; color: #555; }
+
+        /* Estructura del PDF (Oculta hasta descargar) */
         #pdf-template { 
-            display: none; background: #fff; color: #000; padding: 40px; width: 650px; 
+            display: none; background: #fff; color: #000; padding: 40px; width: 600px; 
             font-family: 'Times New Roman', serif; border: 2px solid #000; 
         }
-        .pdf-header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 30px; padding-bottom: 10px; }
-        .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .pdf-table td { padding: 10px; border: 1px solid #ccc; }
-        .label { font-weight: bold; width: 40%; }
-        .dictamen { border-left: 5px solid #000; padding-left: 15px; font-style: italic; }
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .pdf-table td { border: 1px solid #000; padding: 10px; }
+        .label { font-weight: bold; width: 45%; }
     </style>
 </head>
 <body>
 
-    <div class="interface-container">
-        <h1>Mesa de Destilación al Vacío</h1>
-        <div class="controls-grid">
-            <button onclick="inyectarLagrimas()">Inyectar 3 Lágrimas</button>
-            <button onclick="activarBombaVacio()">Activar Vacío</button>
-            <button onclick="alternarFuego()">Calor Sutil</button>
-            <button onclick="filtrarBezoar()">Filtrar Bezoar</button>
-            <button onclick="inyectarRuda()">Inyectar Ruda</button>
-            <button id="btn-descargar" onclick="descargarPDF()" disabled>Descargar Pergamino Oficial</button>
-        </div>
+    <div class="caldero"><div class="liquido" id="pocion"></div></div>
+    
+    <div class="panel">
+        <h2 style="color:#d4af37;">Cátedra del Director Snape</h2>
+        <button onclick="prepararPocion()">Preparar Sustancia</button>
+        <button id="btn-pdf" onclick="descargarPDF()" disabled>Descargar Pergamino Oficial</button>
     </div>
 
     <div id="pdf-template">
-        <div class="pdf-header">
-            <h1 style="margin:0;">PERGAMINO OFICIAL DE CERTIFICACIÓN</h1>
+        <div style="text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px;">
+            <h1 style="margin:0; font-size: 18pt;">PERGAMINO OFICIAL DE CERTIFICACIÓN</h1>
             <p>Hogwarts Orión | Registro de Logros de la Dirección de Mazmorras</p>
         </div>
-        
         <table class="pdf-table">
             <tr><td class="label">ASIGNATURA DEL CASTILLO:</td><td>Pociones Avanzadas (Mesa Clínica N°2)</td></tr>
             <tr><td class="label">CÁTEDRA REGENTE:</td><td>Director Jeremías Snape</td></tr>
@@ -50,26 +57,26 @@
             <tr><td class="label">ESTADO DE LA ESTRUCTURA:</td><td>FILTRO ESTABILIZADO (Excelencia Absoluta)</td></tr>
             <tr><td class="label">CÓDIGO DE VALIDACIÓN:</td><td>[SNAPEPOC1-OK]</td></tr>
         </table>
-
-        <div class="dictamen">
-            <p><strong>DICTAMEN DEL DIRECTOR:</strong></p>
+        <div style="margin-top:30px; border-left: 5px solid #000; padding-left:15px; font-style: italic;">
+            <p><b>DICTAMEN DEL DIRECTOR:</b></p>
             <p>Excelente precisión molecular. El alumno demostró frialdad mental y respeto absoluto por las leyes termodinámicas durante la destilación. Certificación concedida.</p>
         </div>
     </div>
 
     <script>
         let intentos = 1;
-        function inyectarLagrimas(){}
-        function activarBombaVacio(){}
-        function alternarFuego(){}
-        function filtrarBezoar(){}
-        function inyectarRuda(){ document.getElementById('btn-descargar').disabled = false; }
-        
+        function prepararPocion() {
+            document.getElementById('pocion').style.background = '#2ecc71';
+            document.getElementById('btn-pdf').disabled = false;
+        }
         function descargarPDF() {
             const el = document.getElementById("pdf-template");
             el.style.display = "block";
             document.getElementById('p-intentos').innerText = intentos;
-            html2pdf().from(el).save("Certificado_Mazmorras_Intento_" + intentos + ".pdf").then(() => el.style.display = "none");
+            html2pdf().from(el).save("Certificado_Mazmorras_Intento_" + intentos + ".pdf").then(() => {
+                el.style.display = "none";
+                intentos++;
+            });
         }
     </script>
 </body>
